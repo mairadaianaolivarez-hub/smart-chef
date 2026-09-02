@@ -1,8 +1,10 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { X, Check, Coffee, Sun, Cookie, Moon, ShoppingCart, Trash2 } from 'lucide-react';
+import { X, Check, Coffee, Sun, Cookie, Moon, ShoppingCart, Trash2, Cloud, CloudOff } from 'lucide-react';
 import RecipeCard, { type Receta } from '../components/RecipeCard';
 import RecipeDetail, { type Recipe } from '../components/RecipeDetail';
 import { DEMO_RECETAS } from './Inicio';
+import { supabase } from '../lib/supabase';
+import { useSession } from '../lib/useSession';
 
 /* ───────────────────────────────────────────────
    Constantes
@@ -56,6 +58,68 @@ function crearPlanVacio(): PlanSemanal {
     plan[dia] = {};
   }
   return plan;
+}
+
+/* ───────────────────────────────────────────────
+   Funciones Supabase
+   ─────────────────────────────────────────────── */
+
+async function cargarPlanDesdeSupabase(userId: string): Promise<PlanSemanal | null> {
+  const { data, error } = await supabase
+    .from('weekly_plans')
+    .select('dia, categoria, receta_id, receta_nombre')
+    .eq('user_id', userId);
+
+  if (error || !data || data.length === 0) return null;
+
+  const plan = crearPlanVacio();
+  for (const row of data) {
+    const dia = row.dia as Dia;
+    const categoria = row.categoria as Categoria;
+    // Buscar la receta en DEMO_RECETAS por id
+    const receta = DEMO_RECETAS.find((r) => r.id === row.receta_id);
+    if (receta) {
+      plan[dia][categoria] = receta;
+    }
+  }
+  return plan;
+}
+
+async function guardarPlanEnSupabase(userId: string, plan: PlanSemanal): Promise<void> {
+  // Primero borrar todos los planes del usuario
+  const { error: deleteError } = await supabase
+    .from('weekly_plans')
+    .delete()
+    .eq('user_id', userId);
+
+  if (deleteError) {
+    console.error('Error al limpiar planes en Supabase:', deleteError);
+    return;
+  }
+
+  // Luego insertar los nuevos
+  const rows: { user_id: string; dia: string; categoria: string; receta_id: number; receta_nombre: string }[] = [];
+  for (const dia of DIAS) {
+    for (const { key: categoria } of CATEGORIAS) {
+      const receta = plan[dia]?.[categoria];
+      if (receta) {
+        rows.push({
+          user_id: userId,
+          dia,
+          categoria,
+          receta_id: receta.id,
+          receta_nombre: receta.nombre,
+        });
+      }
+    }
+  }
+
+  if (rows.length === 0) return;
+
+  const { error: insertError } = await supabase.from('weekly_plans').insert(rows);
+  if (insertError) {
+    console.error('Error al guardar planes en Supabase:', insertError);
+  }
 }
 
 /* ───────────────────────────────────────────────
@@ -214,12 +278,12 @@ function CeldaPlan({
    ─────────────────────────────────────────────── */
 
 export default function Planes() {
+  const { user } = useSession();
   const [plan, setPlan] = useState<PlanSemanal>(() => {
     try {
       const stored = localStorage.getItem(LS_PLAN);
       if (stored) {
         const parsed = JSON.parse(stored) as PlanSemanal;
-        // Validar estructura básica
         if (parsed && typeof parsed === 'object') {
           return parsed;
         }
@@ -232,11 +296,42 @@ export default function Planes() {
 
   const [selectorOpen, setSelectorOpen] = useState<{ dia: Dia; categoria: Categoria } | null>(null);
   const [detailRecipe, setDetailRecipe] = useState<Recipe | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
-  /* ── Persistir en localStorage ── */
+  /* ── Cargar plan desde Supabase al iniciar sesión ── */
+  useEffect(() => {
+    if (!user) return;
+    setSyncing(true);
+    setSyncError(null);
+    cargarPlanDesdeSupabase(user.id).then((planDesdeNube) => {
+      if (planDesdeNube) {
+        setPlan(planDesdeNube);
+      }
+      setSyncing(false);
+    }).catch((err) => {
+      console.error('Error al cargar plan desde Supabase:', err);
+      setSyncError('No se pudieron cargar los planes desde la nube');
+      setSyncing(false);
+    });
+  }, [user?.id]);
+
+  /* ── Persistir en localStorage siempre ── */
   useEffect(() => {
     localStorage.setItem(LS_PLAN, JSON.stringify(plan));
   }, [plan]);
+
+  /* ── Sincronizar con Supabase cuando cambia el plan ── */
+  useEffect(() => {
+    if (!user) return;
+    const timer = setTimeout(() => {
+      guardarPlanEnSupabase(user.id, plan).catch((err) => {
+        console.error('Error al sincronizar plan con Supabase:', err);
+        setSyncError('Error al guardar en la nube');
+      });
+    }, 500); // debounce de 500ms
+    return () => clearTimeout(timer);
+  }, [plan, user?.id]);
 
   /* ── Elegir receta en una celda ── */
   const handleSelect = useCallback(
@@ -321,12 +416,37 @@ export default function Planes() {
       {/* ── Encabezado ── */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#2D2A24]" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Mi Plan Semanal
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-[#2D2A24]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Mi Plan Semanal
+            </h1>
+            {/* Indicador de sincronización */}
+            {user && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                style={{
+                  backgroundColor: syncing ? '#FDF6F0' : '#F0FDF4',
+                  color: syncing ? '#2D2A24' : '#166534',
+                }}
+                title={syncing ? 'Sincronizando…' : 'Guardado en la nube'}
+              >
+                {syncing ? (
+                  <CloudOff size={12} className="animate-pulse" />
+                ) : (
+                  <Cloud size={12} />
+                )}
+                <span className="hidden sm:inline">{syncing ? 'Sincronizando…' : 'En la nube'}</span>
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-[#2D2A24]/60" style={{ fontFamily: 'Inter, sans-serif' }}>
             {celdasLlenas} de {totalCeldas} comidas planificadas
           </p>
+          {syncError && (
+            <p className="mt-1 text-xs text-red-500" style={{ fontFamily: 'Inter, sans-serif' }}>
+              {syncError}
+            </p>
+          )}
         </div>
         {celdasLlenas > 0 && (
           <button
