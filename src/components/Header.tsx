@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { Menu, X, ChefHat } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, ChefHat, User, LogOut } from 'lucide-react';
+import { useSession } from '../lib/useSession';
+import { auth } from '../lib/auth';
 
 const NAV_ITEMS = [
   { label: 'Inicio', href: '/' },
@@ -11,6 +14,13 @@ const NAV_ITEMS = [
 
 function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, loading } = useSession();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    navigate('/');
+  };
 
   return (
     <header
@@ -71,6 +81,30 @@ function Header() {
               {item.label}
             </a>
           ))}
+          {/* User button */}
+          {loading ? (
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#2D2A24]/20 border-t-[#E07A5F]" aria-hidden="true" />
+          ) : user ? (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[#2D2A24]/60 hover:text-[#E07A5F] hover:bg-[#FDF6F0] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E07A5F] focus-visible:ring-offset-2"
+              title="Cerrar sesión"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E07A5F] text-white text-xs font-bold">
+                {user.email?.charAt(0).toUpperCase() || 'U'}
+              </span>
+              <LogOut size={16} />
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#E07A5F] px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E07A5F] focus-visible:ring-offset-2"
+            >
+              <User size={16} />
+              Ingresar
+            </Link>
+          )}
         </nav>
 
         {/* Mobile menu button */}
@@ -120,6 +154,40 @@ function Header() {
                 {item.label}
               </a>
             ))}
+            {/* Mobile user section */}
+            <div className="border-t border-[#E8E0D8] pt-3 mt-3">
+              {loading ? (
+                <div className="flex justify-center py-2">
+                  <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#2D2A24]/20 border-t-[#E07A5F]" aria-hidden="true" />
+                </div>
+              ) : user ? (
+                <div className="flex items-center justify-between px-3 py-2">
+                  <span className="flex items-center gap-2 text-sm text-[#2D2A24]/60">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E07A5F] text-white text-xs font-bold">
+                      {user.email?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                    {user.email}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                  >
+                    <LogOut size={16} />
+                    Cerrar sesión
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-2 rounded-lg bg-[#E07A5F] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E07A5F] focus-visible:ring-offset-2"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <User size={18} />
+                  Ingresar
+                </Link>
+              )}
+            </div>
           </div>
         </nav>
       )}
