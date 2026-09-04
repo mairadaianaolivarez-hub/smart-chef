@@ -166,7 +166,7 @@ export default function Recetas() {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl bg-[#FDF6F0] py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl bg-white/80 backdrop-blur-sm py-16 text-center">
           <p className="text-sm text-[#2D2A24]/60" style={{ fontFamily: 'Inter, sans-serif' }}>
             No se encontraron recetas con esos filtros.
           </p>

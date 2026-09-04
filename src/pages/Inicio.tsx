@@ -1244,7 +1244,7 @@ export default function Inicio() {
     <main className="mx-auto max-w-6xl px-4 py-6">
       {/* ── 1. Onboarding ── */}
       {showOnboarding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <h2 className="mb-1 text-xl font-bold text-[#2D2A24]" style={{ fontFamily: 'Inter, sans-serif' }}>
               ¡Bienvenido a Smart Chef!
@@ -1353,7 +1353,7 @@ export default function Inicio() {
 
       {/* ── 5. Grid de recetas o mensaje vacío ── */}
       {!selectedCategory ? (
-        <div className="flex flex-col items-center justify-center rounded-xl bg-[#FDF6F0] py-20 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl bg-white/80 backdrop-blur-sm py-20 text-center">
           <Coffee size={40} className="text-[#2D2A24]/20 mb-3" aria-hidden="true" />
           <p className="text-sm text-[#2D2A24]/60" style={{ fontFamily: 'Inter, sans-serif' }}>
             Elegí un momento del día para ver recetas
@@ -1376,7 +1376,7 @@ export default function Inicio() {
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl bg-[#FDF6F0] py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl bg-white/80 backdrop-blur-sm py-16 text-center">
           <p className="text-sm text-[#2D2A24]/60" style={{ fontFamily: 'Inter, sans-serif' }}>
             No hay recetas para {selectedCategory}. ¡Pronto agregaremos más!
           </p>

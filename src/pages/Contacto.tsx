@@ -22,7 +22,7 @@ export default function Contacto() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
-      <div className="rounded-xl bg-[#FDF6F0] p-6 sm:p-8">
+      <div className="rounded-xl bg-white/90 backdrop-blur-sm p-6 sm:p-8">
         {/* Encabezado */}
         <div className="mb-6 flex flex-col items-center text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#E07A5F]/10">

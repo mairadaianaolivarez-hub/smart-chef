@@ -167,8 +167,8 @@ const BLOG_ARTICULOS: Articulo[] = [
 
 function Acordeon({ articulo, abierto, onToggle }: { articulo: Articulo; abierto: boolean; onToggle: () => void }) {
   return (
-    <div
-      className="overflow-hidden rounded-xl border border-[#E8DED5] bg-white transition-all duration-200"
+      <div
+            className="overflow-hidden rounded-xl border border-[#E8DED5] bg-white transition-all duration-200"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
       <button
