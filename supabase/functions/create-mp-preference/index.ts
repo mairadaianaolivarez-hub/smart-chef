@@ -48,9 +48,12 @@ serve(async (req) => {
       });
     }
 
-    // Obtener la URL base para el webhook
+    // Obtener la URL base para el webhook y los back_urls
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const functionUrl = `${supabaseUrl}/functions/v1/mercadopago-webhook`;
+
+    // La URL de la aplicación la obtenemos del header Origin del request
+    const appUrl = req.headers.get('Origin') || 'https://quecocinohoy.app';
 
     // Crear la preferencia en Mercado Pago
     const preferenceData = {
@@ -69,9 +72,9 @@ serve(async (req) => {
       },
       external_reference: body.user_id,
       back_urls: {
-        success: `${supabaseUrl}/functions/v1/mercadopago-webhook?status=success`,
-        failure: `${supabaseUrl}/functions/v1/mercadopago-webhook?status=failure`,
-        pending: `${supabaseUrl}/functions/v1/mercadopago-webhook?status=pending`,
+        success: `${appUrl}/?payment=success`,
+        failure: `${appUrl}/?payment=failure`,
+        pending: `${appUrl}/?payment=pending`,
       },
       auto_return: 'approved',
       notification_url: functionUrl,

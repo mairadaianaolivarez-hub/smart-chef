@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { CreditCard, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { CreditCard, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { useSession } from '../lib/useSession';
 import { createPaymentPreference, openMercadoPagoCheckout, checkPaymentAccess } from '../lib/mercadopago';
 
@@ -9,27 +9,84 @@ export default function PaywallButton() {
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [polling, setPolling] = useState(false);
 
-  useEffect(() => {
+  // Verificar acceso al montar y cuando el usuario cambie
+  const verifyAccess = useCallback(async () => {
     if (!user) {
-      setChecking(false);
       setHasPaid(false);
+      setChecking(false);
       return;
     }
 
-    let cancelled = false;
-    checkPaymentAccess(user.id).then((paid) => {
-      if (cancelled) return;
+    try {
+      const paid = await checkPaymentAccess(user.id);
       setHasPaid(paid);
-      setChecking(false);
-    }).catch(() => {
-      if (cancelled) return;
+      return paid;
+    } catch {
       setHasPaid(false);
+      return false;
+    } finally {
       setChecking(false);
-    });
-
-    return () => { cancelled = true; };
+    }
   }, [user?.id]);
+
+  useEffect(() => {
+    verifyAccess();
+  }, [verifyAccess]);
+
+  // Detectar si volvemos de Mercado Pago con éxito
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+
+    if (paymentStatus === 'success' && user) {
+      // Limpiar el parámetro de la URL sin recargar
+      window.history.replaceState({}, '', window.location.pathname);
+      
+      // Iniciar polling para verificar que el webhook ya actualizó el acceso
+      setPolling(true);
+      setError(null);
+    }
+  }, [user]);
+
+  // Polling: cada 3 segundos verificar si el pago ya se acreditó
+  useEffect(() => {
+    if (!polling || !user) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 20; // 60 segundos máximo
+
+    const interval = setInterval(async () => {
+      if (cancelled || attempts >= maxAttempts) {
+        clearInterval(interval);
+        if (!cancelled) {
+          setPolling(false);
+          setError('El pago está siendo procesado. Si ya pagaste, esperá unos minutos y recargá la página.');
+        }
+        return;
+      }
+
+      attempts++;
+      try {
+        const paid = await checkPaymentAccess(user.id);
+        if (paid) {
+          clearInterval(interval);
+          setHasPaid(true);
+          setPolling(false);
+          setError(null);
+        }
+      } catch {
+        // Ignorar errores durante polling
+      }
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [polling, user?.id]);
 
   const handlePayment = async () => {
     if (!user) return;
@@ -133,25 +190,37 @@ export default function PaywallButton() {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={handlePayment}
-        disabled={loading}
-        className="w-full rounded-lg bg-[#E07A5F] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#c96a4f] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E07A5F] focus-visible:ring-offset-2 inline-flex items-center justify-center gap-2"
-        style={{ minHeight: '48px', fontFamily: 'Inter, sans-serif' }}
-      >
-        {loading ? (
-          <>
-            <Loader2 size={18} className="animate-spin" />
-            Generando pago...
-          </>
-        ) : (
-          <>
-            <CreditCard size={18} />
-            Pagar ahora
-          </>
-        )}
-      </button>
+      {polling ? (
+        <div className="w-full rounded-lg bg-amber-50 border border-amber-200 px-5 py-4 text-center">
+          <RefreshCw size={20} className="mx-auto mb-2 animate-spin text-amber-600" />
+          <p className="text-sm font-medium text-amber-800" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Verificando tu pago...
+          </p>
+          <p className="text-xs text-amber-600 mt-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Esto puede tomar unos segundos. No recargues la página.
+          </p>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={handlePayment}
+          disabled={loading}
+          className="w-full rounded-lg bg-[#E07A5F] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#c96a4f] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E07A5F] focus-visible:ring-offset-2 inline-flex items-center justify-center gap-2"
+          style={{ minHeight: '48px', fontFamily: 'Inter, sans-serif' }}
+        >
+          {loading ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              Generando pago...
+            </>
+          ) : (
+            <>
+              <CreditCard size={18} />
+              Pagar ahora
+            </>
+          )}
+        </button>
+      )}
 
       <p className="mt-3 text-center text-xs text-[#2D2A24]/40" style={{ fontFamily: 'Inter, sans-serif' }}>
         Pago procesado por Mercado Pago · Datos seguros
