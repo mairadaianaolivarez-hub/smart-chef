@@ -5,7 +5,7 @@ import { useSession } from '../lib/useSession';
 import { auth } from '../lib/auth';
 
 const NAV_ITEMS = [
-  { label: 'Inicio', href: '/' },
+  { label: 'Inicio', href: '/inicio' },
   { label: 'Recetas', href: '/recetas' },
   { label: 'Planes', href: '/planes' },
   { label: 'Blog', href: '/blog' },
@@ -37,7 +37,7 @@ function Header() {
       >
         {/* Logo */}
         <a
-          href="/"
+          href="/inicio"
           className="flex items-center gap-3 no-underline"
           style={{ gap: '12px' }}
           aria-label="Ir al inicio"

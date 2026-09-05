@@ -80,15 +80,14 @@ serve(async (req) => {
 
     console.log(`✅ Pago aprobado: ${verifiedPayment.id} - Email: ${buyerEmail}`);
 
-    // Buscar si el usuario ya existe en auth.users
-    const { data: existingUsers, error: userQueryError } = await supabase
-      .from('auth.users')
-      .select('id, email')
-      .eq('email', buyerEmail);
+    // Buscar si el usuario ya existe usando la Admin API
+    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
+      filter: `email eq '${buyerEmail}'`,
+    });
 
     let userId: string;
 
-    if (userQueryError || !existingUsers || existingUsers.length === 0) {
+    if (listError || !existingUsers || existingUsers.users.length === 0) {
       // El usuario no existe - crear cuenta automáticamente
       console.log(`Creando usuario nuevo para ${buyerEmail}...`);
 
@@ -113,8 +112,7 @@ serve(async (req) => {
       userId = newUser.user.id;
       console.log(`✅ Usuario creado: ${userId}`);
 
-      // Enviar email de bienvenida con instrucciones para acceder
-      // Usamos el sistema de recovery de Supabase para enviar un magic link
+      // Enviar email de recuperación para que el usuario pueda establecer su contraseña
       const { error: recoveryError } = await supabase.auth.admin.generateLink({
         type: 'recovery',
         email: buyerEmail,
@@ -128,7 +126,7 @@ serve(async (req) => {
       }
     } else {
       // El usuario ya existe
-      userId = existingUsers[0].id;
+      userId = existingUsers.users[0].id;
       console.log(`✅ Usuario existente encontrado: ${userId}`);
     }
 

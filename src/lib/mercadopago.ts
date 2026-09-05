@@ -31,6 +31,35 @@ export async function createPaymentPreference(userId: string, userEmail: string)
 }
 
 /**
+ * Crea una preferencia de pago para usuarios NO autenticados.
+ * Usa la Edge Function pública que no requiere JWT.
+ * Mercado Pago se encarga de pedir el email al comprador.
+ */
+export async function createPaymentPreferenceAnon(): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke('create-mp-preference-public', {
+      body: {
+        title: 'Smart Chef - Acceso Completo',
+        description: 'Acceso ilimitado a todas las recetas, planes semanales, blog y más',
+        quantity: 1,
+        unit_price: 7999,
+        currency_id: 'ARS',
+      },
+    });
+
+    if (error) {
+      console.error('Error creando preferencia anónima:', error);
+      return null;
+    }
+
+    return data?.init_point ?? null;
+  } catch (err) {
+    console.error('Error en createPaymentPreferenceAnon:', err);
+    return null;
+  }
+}
+
+/**
  * Abre el checkout de Mercado Pago en una nueva pestaña.
  * Si el popup es bloqueado, navega en la misma ventana.
  */

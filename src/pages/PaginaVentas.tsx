@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  CreditCard, CheckCircle, ArrowRight, Star, Shield, Smartphone,
-  HelpCircle, ChevronDown, ChevronUp, ChefHat, BookOpen, Calendar,
-  Zap, RefreshCw, Loader2, AlertCircle, Mail, Lock, Sparkles
+  CreditCard, CheckCircle, Star, Shield,
+  ChevronDown, ChefHat, BookOpen, Calendar,
+  Zap, RefreshCw, Loader2, AlertCircle, Lock, Sparkles
 } from 'lucide-react';
 import { useSession } from '../lib/useSession';
-import { createPaymentPreference, openMercadoPagoCheckout, checkPaymentAccess } from '../lib/mercadopago';
+import { createPaymentPreference, openMercadoPagoCheckout, checkPaymentAccess, createPaymentPreferenceAnon } from '../lib/mercadopago';
 
 /* ───────────────────────────────────────────────
    FAQ data
@@ -39,12 +39,12 @@ const FAQ_ITEMS = [
    ─────────────────────────────────────────────── */
 const TESTIMONIOS = [
   {
-    nombre: '[Nombre del usuario]',
+    nombre: 'María Fernanda',
     texto: 'Desde que uso Smart Chef dejé de pedir delivery entre semana. Ahorro plata, como más sano y no pierdo tiempo pensando qué cocinar.',
     estrellas: 5,
   },
   {
-    nombre: '[Nombre del usuario]',
+    nombre: 'Carlos Andrés',
     texto: 'La lista de compras automática me cambió la vida. Voy al super con todo lo que necesito y no compro de más. Súper recomendable.',
     estrellas: 5,
   },
@@ -169,17 +169,20 @@ export default function PaginaVentas() {
   }, [polling, user?.id]);
 
   const handlePayment = async () => {
-    if (!user) {
-      // Si no está logueado, redirigir al login primero
-      navigate('/login', { state: { from: '/ventas' } });
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const checkoutUrl = await createPaymentPreference(user.id, user.email ?? '');
+      let checkoutUrl: string | null = null;
+
+      if (user) {
+        // Usuario autenticado: usar la Edge Function con JWT
+        checkoutUrl = await createPaymentPreference(user.id, user.email ?? '');
+      } else {
+        // Usuario no autenticado: usar la Edge Function pública (sin JWT)
+        // Mercado Pago ya le pide el email al comprador en el checkout
+        checkoutUrl = await createPaymentPreferenceAnon();
+      }
 
       if (!checkoutUrl) {
         setError('No se pudo generar el link de pago. Intentalo de nuevo.');
@@ -202,16 +205,8 @@ export default function PaginaVentas() {
       <section className="relative overflow-hidden bg-gradient-to-b from-[#FDF6F0] to-white py-16 sm:py-24">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            {/* Badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#E07A5F]/10 px-4 py-1.5">
-              <Sparkles size={16} className="text-[#E07A5F]" />
-              <span className="text-xs font-semibold text-[#E07A5F] tracking-wide uppercase">
-                Pago único · Acceso de por vida
-              </span>
-            </div>
-
             {/* Titular */}
-            <h1 className="text-3xl font-extrabold leading-tight text-[#2D2A24] sm:text-4xl lg:text-5xl" style={{ fontFamily: 'Merriweather, serif' }}>
+            <h1 className="text-4xl font-extrabold leading-tight text-[#2D2A24] sm:text-5xl lg:text-6xl" style={{ fontFamily: 'Merriweather, serif' }}>
               Dejá de preguntarte{' '}
               <span className="text-[#E07A5F]">"¿qué cocino hoy?"</span>
               {' '}para siempre
@@ -409,6 +404,15 @@ export default function PaginaVentas() {
           <h2 className="text-2xl font-bold text-[#2D2A24] mb-4" style={{ fontFamily: 'Merriweather, serif' }}>
             Empezá a cocinar sin estrés hoy mismo
           </h2>
+
+          {/* Badge de pago único */}
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#E07A5F]/10 px-4 py-1.5">
+            <Sparkles size={16} className="text-[#E07A5F]" />
+            <span className="text-xs font-semibold text-[#E07A5F] tracking-wide uppercase">
+              Pago único · Acceso de por vida
+            </span>
+          </div>
+
           <p className="text-base text-[#2D2A24]/70 mb-8 max-w-lg mx-auto">
             Un solo pago. Acceso de por vida. Sin vueltas.
           </p>

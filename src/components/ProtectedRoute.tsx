@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '../lib/useSession';
 import { useState, useEffect, useCallback } from 'react';
 import { checkPaymentAccess } from '../lib/mercadopago';
@@ -10,6 +10,7 @@ import PaywallButton from './PaywallButton';
 export function ProtectedRoute({ children, redirectTo = '/login' }: { children: ReactNode; redirectTo?: string }) {
   const { session, user, loading: sessionLoading } = useSession();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [paymentStatus, setPaymentStatus] = useState<'checking' | 'paid' | 'unpaid'>('checking');
   const [polling, setPolling] = useState(false);
@@ -41,8 +42,8 @@ export function ProtectedRoute({ children, redirectTo = '/login' }: { children: 
       // Limpiar el parámetro de la URL sin recargar
       window.history.replaceState({}, '', window.location.pathname);
       
-      // Iniciar polling para verificar que el webhook ya actualizó el acceso
-      setPolling(true);
+      // Redirigir a /inicio (la app real) que también verifica el pago
+      navigate('/inicio', { replace: true });
     }
   }, [user]);
 
