@@ -9,6 +9,8 @@ interface MercadoPagoPayment {
   currency_id: string;
   payer?: {
     email?: string;
+    first_name?: string;
+    last_name?: string;
   };
   external_reference?: string;
 }
@@ -69,28 +71,65 @@ serve(async (req) => {
       return new Response('OK', { status: 200 });
     }
 
-    // Buscar el usuario por external_reference (user_id) o por email
-    let userId = verifiedPayment.external_reference;
-
-    if (!userId && verifiedPayment.payer?.email) {
-      // Buscar el usuario por email
-      const { data: userData, error: userError } = await supabase
-        .from('auth.users')
-        .select('id')
-        .eq('email', verifiedPayment.payer.email)
-        .single();
-
-      if (userError || !userData) {
-        console.error('Usuario no encontrado:', verifiedPayment.payer.email);
-        return new Response('User not found', { status: 404 });
-      }
-
-      userId = userData.id;
+    // Obtener el email del comprador
+    const buyerEmail = verifiedPayment.payer?.email;
+    if (!buyerEmail) {
+      console.error('No se pudo obtener el email del comprador');
+      return new Response('Buyer email not found', { status: 400 });
     }
 
-    if (!userId) {
-      console.error('No se pudo determinar el usuario');
-      return new Response('User not identified', { status: 400 });
+    console.log(`✅ Pago aprobado: ${verifiedPayment.id} - Email: ${buyerEmail}`);
+
+    // Buscar si el usuario ya existe en auth.users
+    const { data: existingUsers, error: userQueryError } = await supabase
+      .from('auth.users')
+      .select('id, email')
+      .eq('email', buyerEmail);
+
+    let userId: string;
+
+    if (userQueryError || !existingUsers || existingUsers.length === 0) {
+      // El usuario no existe - crear cuenta automáticamente
+      console.log(`Creando usuario nuevo para ${buyerEmail}...`);
+
+      // Generar una contraseña temporal aleatoria
+      const tempPassword = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+
+      // Crear el usuario usando la API de Admin de Supabase
+      const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
+        email: buyerEmail,
+        password: tempPassword,
+        email_confirm: true, // Confirmar email automáticamente
+        user_metadata: {
+          full_name: `${verifiedPayment.payer?.first_name || ''} ${verifiedPayment.payer?.last_name || ''}`.trim() || 'Usuario Smart Chef',
+        },
+      });
+
+      if (createUserError || !newUser?.user) {
+        console.error('Error creando usuario:', createUserError);
+        return new Response('Error creating user', { status: 500 });
+      }
+
+      userId = newUser.user.id;
+      console.log(`✅ Usuario creado: ${userId}`);
+
+      // Enviar email de bienvenida con instrucciones para acceder
+      // Usamos el sistema de recovery de Supabase para enviar un magic link
+      const { error: recoveryError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: buyerEmail,
+      });
+
+      if (recoveryError) {
+        console.error('Error enviando recovery link:', recoveryError);
+        // No es crítico, el usuario puede pedir reset de contraseña manualmente
+      } else {
+        console.log(`✅ Recovery link enviado a ${buyerEmail}`);
+      }
+    } else {
+      // El usuario ya existe
+      userId = existingUsers[0].id;
+      console.log(`✅ Usuario existente encontrado: ${userId}`);
     }
 
     // Guardar el pago en la tabla payments
@@ -129,7 +168,7 @@ serve(async (req) => {
       return new Response('Error updating access', { status: 500 });
     }
 
-    console.log(`✅ Pago ${verifiedPayment.id} procesado para usuario ${userId}`);
+    console.log(`✅ Pago ${verifiedPayment.id} procesado exitosamente para usuario ${userId} (${buyerEmail})`);
 
     return new Response('OK', { status: 200 });
   } catch (error) {

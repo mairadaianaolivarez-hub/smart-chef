@@ -7,6 +7,7 @@ import Blog from './pages/Blog';
 import Contacto from './pages/Contacto';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import PaginaVentas from './pages/PaginaVentas';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/contacto" element={<ProtectedRoute><Contacto /></ProtectedRoute>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/ventas" element={<PaginaVentas />} />
         </Routes>
       </div>
     </BrowserRouter>
