@@ -19,7 +19,7 @@ function Header() {
 
   const handleSignOut = async () => {
     await auth.signOut();
-    navigate('/');
+    navigate('/login');
   };
 
   return (

@@ -7,6 +7,7 @@ import Blog from './pages/Blog';
 import Contacto from './pages/Contacto';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 export default function App() {
   return (
@@ -22,11 +23,11 @@ export default function App() {
         />
         <Header />
         <Routes>
-          <Route path="/" element={<Inicio />} />
-          <Route path="/recetas" element={<Recetas />} />
-          <Route path="/planes" element={<Planes />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/contacto" element={<Contacto />} />
+          <Route path="/" element={<ProtectedRoute><Inicio /></ProtectedRoute>} />
+          <Route path="/recetas" element={<ProtectedRoute><Recetas /></ProtectedRoute>} />
+          <Route path="/planes" element={<ProtectedRoute><Planes /></ProtectedRoute>} />
+          <Route path="/blog" element={<ProtectedRoute><Blog /></ProtectedRoute>} />
+          <Route path="/contacto" element={<ProtectedRoute><Contacto /></ProtectedRoute>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
