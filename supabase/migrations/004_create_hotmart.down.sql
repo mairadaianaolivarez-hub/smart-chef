@@ -1,0 +1,2 @@
+ALTER TABLE hotmart_purchases RENAME TO hotmart_purchases_archived_20250101;
+ALTER TABLE hotmart_access RENAME TO hotmart_access_archived_20250101;

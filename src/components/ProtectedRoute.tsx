@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '../lib/useSession';
 import { useState, useEffect, useCallback } from 'react';
 import { checkPaymentAccess } from '../lib/mercadopago';
+import { checkHotmartAccess } from '../lib/hotmart';
 import { Loader2, RefreshCw } from 'lucide-react';
 import PaywallButton from './PaywallButton';
 
