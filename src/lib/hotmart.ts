@@ -37,7 +37,7 @@ const DEMO_OFFERS: HotmartOffer[] = [
     access_type: 'one_time',
     product_name: 'Smart Chef - Acceso Completo',
     offer_name: 'Pago único · Acceso de por vida',
-    checkout_url: '#',
+    checkout_url: 'https://pay.hotmart.com/M107605216G',
     price_value: 7999,
     price_currency: 'ARS',
     billing_period: null,

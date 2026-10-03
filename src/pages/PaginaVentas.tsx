@@ -6,7 +6,8 @@ import {
   Zap, RefreshCw, Loader2, AlertCircle, Lock, Sparkles
 } from 'lucide-react';
 import { useSession } from '../lib/useSession';
-import { createPaymentPreference, openMercadoPagoCheckout, checkPaymentAccess, createPaymentPreferenceAnon } from '../lib/mercadopago';
+import { checkPaymentAccess } from '../lib/mercadopago';
+import { openHotmartCheckout } from '../lib/hotmart';
 
 /* ───────────────────────────────────────────────
    FAQ data
@@ -168,35 +169,11 @@ export default function PaginaVentas() {
     };
   }, [polling, user?.id]);
 
-  const handlePayment = async () => {
+  const handlePayment = () => {
     setLoading(true);
     setError(null);
-
-    try {
-      let checkoutUrl: string | null = null;
-
-      if (user) {
-        // Usuario autenticado: usar la Edge Function con JWT
-        checkoutUrl = await createPaymentPreference(user.id, user.email ?? '');
-      } else {
-        // Usuario no autenticado: usar la Edge Function pública (sin JWT)
-        // Mercado Pago ya le pide el email al comprador en el checkout
-        checkoutUrl = await createPaymentPreferenceAnon();
-      }
-
-      if (!checkoutUrl) {
-        setError('No se pudo generar el link de pago. Intentalo de nuevo.');
-        setLoading(false);
-        return;
-      }
-
-      openMercadoPagoCheckout(checkoutUrl);
-    } catch (err) {
-      console.error('Error al iniciar pago:', err);
-      setError('Ocurrió un error al procesar el pago.');
-    } finally {
-      setLoading(false);
-    }
+    openHotmartCheckout('https://pay.hotmart.com/M107605216G');
+    setLoading(false);
   };
 
   return (

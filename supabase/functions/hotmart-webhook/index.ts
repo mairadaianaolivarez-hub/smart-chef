@@ -24,6 +24,21 @@ interface NormalizedPayload {
 }
 
 /**
+ * Extrae un ID de producto como string, sin importar si Hotmart
+ * lo manda como string o como objeto { id, name, … }.
+ */
+function extractProductId(value: unknown): string | null {
+  if (typeof value === 'string') return value.trim() || null;
+  if (value && typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    // Intentar con las claves más comunes que usa Hotmart
+    const id = obj.id ?? obj.product_id ?? obj.ucode ?? obj.code;
+    return typeof id === 'string' ? id.trim() || null : null;
+  }
+  return null;
+}
+
+/**
  * Normaliza el payload de Hotmart sin importar el formato.
  * Hotmart puede enviar los datos en distintas ubicaciones:
  *   - body.data.transaction
@@ -76,12 +91,13 @@ function normalizePayload(body: Record<string, unknown>): NormalizedPayload | nu
   ).toString().trim().toLowerCase();
 
   // ── Product ──
-  const product_id = (
-    (data.product_id as string) ??
-    (body.product_id as string) ??
-    (data.product as string) ??     // algunos eventos usan "product"
-    null
-  );
+  // Usamos extractProductId para manejar tanto strings como objetos
+  const product_id =
+    extractProductId(data.product_id) ??
+    extractProductId(body.product_id) ??
+    extractProductId(data.product) ??   // algunos eventos usan "product" (puede ser objeto)
+    extractProductId(body.product) ??
+    null;
 
   const product_name = (
     (data.product_name as string) ??
@@ -204,8 +220,28 @@ serve(async (req) => {
       return new Response('Server configuration error - HOTMART_HOTTOK missing', { status: 500 });
     }
 
-    // El hottok puede venir en: body.hottok, query string, o header
-    const receivedHottok = (body.hottok as string) ?? '';
+    // El hottok puede venir en tres lugares. Hotmart lo manda como query string
+    // (?hottok=...), pero también aceptamos body.hottok o header X-Hotmart-Hottok.
+    const url = new URL(req.url);
+    const receivedHottok =
+      (body.hottok as string)?.trim() ||
+      url.searchParams.get('hottok')?.trim() ||
+      req.headers.get('X-Hotmart-Hottok')?.trim() ||
+      '';
+
+    // Determinar de dónde vino el hottok para el log
+    let hottokSource = 'ninguna';
+    if ((body.hottok as string)?.trim()) {
+      hottokSource = 'body';
+    } else if (url.searchParams.get('hottok')?.trim()) {
+      hottokSource = 'query';
+    } else if (req.headers.get('X-Hotmart-Hottok')?.trim()) {
+      hottokSource = 'header';
+    }
+
+    console.log(
+      '🔑 Hottok recibido (primeros 6): "' + receivedHottok.slice(0, 6) + '..." | fuente: ' + hottokSource
+    );
 
     if (receivedHottok !== expectedHottok) {
       console.error('❌ Hottok inválido. Esperado:', expectedHottok.slice(0, 6) + '...', 'Recibido:', receivedHottok.slice(0, 6) + '...');
@@ -237,7 +273,7 @@ serve(async (req) => {
       raw,
     } = normalized;
 
-    console.log(`📦 Webhook normalizado: tx=${transaction} | status=${status} | email=${buyer_email}`);
+    console.log(`📦 Webhook normalizado: tx=${transaction} | status=${status} | email=${buyer_email} | product_id=${product_id}`);
 
     // ── 3. Conectar a Supabase con service_role ──
     const supabaseUrl = Deno.env.get('SUPABASE_URL');

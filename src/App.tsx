@@ -17,11 +17,11 @@ function AppLayout() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Fondo de pantalla fijo - imagen de comida saludable */}
+      {/* Fondo degradado rojo oscuro fijo */}
       <div
-        className="fixed inset-0 -z-10 h-full w-full bg-cover bg-center bg-no-repeat opacity-40"
+        className="fixed inset-0 -z-10 h-full w-full"
         style={{
-          backgroundImage: `url('https://fzfncffjekempswnjilr.supabase.co/storage/v1/object/public/cosmos-code-sites/_assets/Ws3HONfaS0dZKNnL4oNlI9ZGSV23/2d2e2c17-e36b-4321-a51f-77fab61d3ff7/40ca46ec3c7e09da6993c7ad.png')`,
+          background: 'linear-gradient(180deg, #DC2626 0%, #991B1B 40%, #1F0000 100%)',
         }}
         aria-hidden="true"
       />

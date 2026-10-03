@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CreditCard, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { useSession } from '../lib/useSession';
-import { createPaymentPreference, openMercadoPagoCheckout, checkPaymentAccess } from '../lib/mercadopago';
+import { checkPaymentAccess } from '../lib/mercadopago';
+import { openHotmartCheckout } from '../lib/hotmart';
 
 export default function PaywallButton() {
   const { user } = useSession();
@@ -88,28 +89,11 @@ export default function PaywallButton() {
     };
   }, [polling, user?.id]);
 
-  const handlePayment = async () => {
-    if (!user) return;
-
+  const handlePayment = () => {
     setLoading(true);
     setError(null);
-
-    try {
-      const checkoutUrl = await createPaymentPreference(user.id, user.email ?? '');
-
-      if (!checkoutUrl) {
-        setError('No se pudo generar el link de pago. Intentalo de nuevo.');
-        setLoading(false);
-        return;
-      }
-
-      openMercadoPagoCheckout(checkoutUrl);
-    } catch (err) {
-      console.error('Error al iniciar pago:', err);
-      setError('Ocurrió un error al procesar el pago.');
-    } finally {
-      setLoading(false);
-    }
+    openHotmartCheckout('https://pay.hotmart.com/M107605216G');
+    setLoading(false);
   };
 
   if (checking) {

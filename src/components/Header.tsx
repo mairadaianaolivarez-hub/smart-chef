@@ -24,10 +24,10 @@ function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full border-b"
+      className="sticky top-0 z-50 w-full border-b backdrop-blur-sm"
       style={{
-        backgroundColor: '#FFFFFF',
-        borderColor: '#E8E0D8',
+        backgroundColor: 'rgba(153, 27, 27, 0.95)',
+        borderColor: 'rgba(220, 38, 38, 0.3)',
         fontFamily: "'Inter', sans-serif",
       }}
     >
@@ -44,9 +44,7 @@ function Header() {
         >
           <span
             className="flex h-10 w-10 items-center justify-center rounded-full text-white"
-            style={{
-              backgroundColor: '#E07A5F',
-            }}
+            style={{ backgroundColor: '#DC2626' }}
             aria-hidden="true"
           >
             <ChefHat size={20} strokeWidth={2.5} />
@@ -54,7 +52,7 @@ function Header() {
           <span
             className="hidden text-lg font-semibold sm:inline"
             style={{
-              color: '#2D2A24',
+              color: '#FFFFFF',
               fontFamily: "'Merriweather', serif",
             }}
           >
@@ -70,12 +68,12 @@ function Header() {
               href={item.href}
               className="text-sm font-medium transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               style={{
-                color: '#2D2A24',
+                color: '#FFFFFF',
                 fontFamily: "'Inter', sans-serif",
                 fontSize: '14px',
                 lineHeight: '1.5',
                 borderRadius: '4px',
-                ringColor: '#E07A5F',
+                ringColor: '#EF4444',
               }}
             >
               {item.label}
@@ -83,15 +81,15 @@ function Header() {
           ))}
           {/* User button */}
           {loading ? (
-            <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#2D2A24]/20 border-t-[#E07A5F]" aria-hidden="true" />
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" aria-hidden="true" />
           ) : user ? (
             <button
               type="button"
               onClick={handleSignOut}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[#2D2A24]/60 hover:text-[#E07A5F] hover:bg-[#FDF6F0] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E07A5F] focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
               title="Cerrar sesión"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E07A5F] text-white text-xs font-bold">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">
                 {user.email?.charAt(0).toUpperCase() || 'U'}
               </span>
               <LogOut size={16} />
@@ -99,7 +97,7 @@ function Header() {
           ) : (
             <Link
               to="/login"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#E07A5F] px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E07A5F] focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
             >
               <User size={16} />
               Ingresar
@@ -112,10 +110,10 @@ function Header() {
           type="button"
           className="inline-flex items-center justify-center rounded-md p-2 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           style={{
-            color: '#2D2A24',
+            color: '#FFFFFF',
             minHeight: '44px',
             minWidth: '44px',
-            ringColor: '#E07A5F',
+            ringColor: '#EF4444',
           }}
           onClick={() => setMobileOpen((prev) => !prev)}
           aria-expanded={mobileOpen}
@@ -132,8 +130,8 @@ function Header() {
           id="mobile-menu"
           className="border-t md:hidden"
           style={{
-            backgroundColor: '#FFFFFF',
-            borderColor: '#E8E0D8',
+            backgroundColor: 'rgba(153, 27, 27, 0.98)',
+            borderColor: 'rgba(220, 38, 38, 0.3)',
           }}
         >
           <div className="space-y-1 px-4 py-4">
@@ -141,13 +139,13 @@ function Header() {
               <a
                 key={item.href}
                 href={item.href}
-                className="block rounded-md px-3 py-2 text-base font-medium transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                className="block rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                 style={{
-                  color: '#2D2A24',
+                  color: '#FFFFFF',
                   fontFamily: "'Inter', sans-serif",
                   fontSize: '16px',
                   lineHeight: '1.5',
-                  ringColor: '#E07A5F',
+                  ringColor: '#EF4444',
                 }}
                 onClick={() => setMobileOpen(false)}
               >
@@ -155,15 +153,15 @@ function Header() {
               </a>
             ))}
             {/* Mobile user section */}
-            <div className="border-t border-[#E8E0D8] pt-3 mt-3">
+            <div className="border-t border-white/10 pt-3 mt-3">
               {loading ? (
                 <div className="flex justify-center py-2">
-                  <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#2D2A24]/20 border-t-[#E07A5F]" aria-hidden="true" />
+                  <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" aria-hidden="true" />
                 </div>
               ) : user ? (
                 <div className="flex items-center justify-between px-3 py-2">
-                  <span className="flex items-center gap-2 text-sm text-[#2D2A24]/60">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E07A5F] text-white text-xs font-bold">
+                  <span className="flex items-center gap-2 text-sm text-white/70">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">
                       {user.email?.charAt(0).toUpperCase() || 'U'}
                     </span>
                     {user.email}
@@ -171,7 +169,7 @@ function Header() {
                   <button
                     type="button"
                     onClick={() => { handleSignOut(); setMobileOpen(false); }}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-300 hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                   >
                     <LogOut size={16} />
                     Cerrar sesión
@@ -180,7 +178,7 @@ function Header() {
               ) : (
                 <Link
                   to="/login"
-                  className="flex items-center gap-2 rounded-lg bg-[#E07A5F] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E07A5F] focus-visible:ring-offset-2"
+                  className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
                   onClick={() => setMobileOpen(false)}
                 >
                   <User size={18} />
