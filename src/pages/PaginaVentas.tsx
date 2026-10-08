@@ -204,7 +204,7 @@ export default function PaginaVentas() {
               ) : hasPaid ? (
                 <button
                   type="button"
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/inicio')}
                   className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-all hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
                   style={{ minHeight: '48px' }}
                 >
@@ -415,7 +415,7 @@ export default function PaginaVentas() {
           ) : hasPaid ? (
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/inicio')}
               className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-8 py-3 text-base font-semibold text-white shadow-sm transition-all hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
               style={{ minHeight: '48px' }}
             >

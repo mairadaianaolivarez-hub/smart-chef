@@ -9,7 +9,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import PaginaVentas from './pages/PaginaVentas';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { PublicRoute } from './components/PublicRoute';
 
 function AppLayout() {
   const location = useLocation();
@@ -28,8 +27,9 @@ function AppLayout() {
       {/* Ocultar Header en la página de ventas */}
       {!isVentasPage && <Header />}
       <Routes>
-        {/* Ruta raíz: si no pagó ve la página de ventas, si pagó ve Inicio */}
-        <Route path="/" element={<PublicRoute><PaginaVentas /></PublicRoute>} />
+        {/* Ruta raíz: SIEMPRE muestra la página de ventas (landing pública) */}
+        <Route path="/" element={<PaginaVentas />} />
+        <Route path="/ventas" element={<PaginaVentas />} />
         <Route path="/inicio" element={<ProtectedRoute><Inicio /></ProtectedRoute>} />
         <Route path="/recetas" element={<ProtectedRoute><Recetas /></ProtectedRoute>} />
         <Route path="/planes" element={<ProtectedRoute><Planes /></ProtectedRoute>} />
@@ -37,7 +37,6 @@ function AppLayout() {
         <Route path="/contacto" element={<ProtectedRoute><Contacto /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/ventas" element={<PaginaVentas />} />
       </Routes>
     </div>
   );

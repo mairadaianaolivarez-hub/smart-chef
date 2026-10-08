@@ -81,16 +81,17 @@ export default function Register() {
             <label htmlFor="register-name" className="block text-sm font-medium text-[#2D2A24] mb-1">
               Nombre
             </label>
-            <input
-              id="register-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Tu nombre"
-              required
-              className="w-full rounded-lg border border-[#E8DED5] bg-white px-3 py-2.5 text-sm text-[#2D2A24] placeholder:text-[#2D2A24]/40 focus:border-[#E07A5F] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/20"
-              style={{ minHeight: '44px', fontFamily: 'Inter, sans-serif' }}
-            />
+              <input
+                id="register-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Tu nombre"
+                required
+                autoComplete="off"
+                className="w-full rounded-lg border border-[#E8DED5] bg-white px-3 py-2.5 text-sm text-[#2D2A24] placeholder:text-[#2D2A24]/40 focus:border-[#E07A5F] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/20"
+                style={{ minHeight: '44px', fontFamily: 'Inter, sans-serif' }}
+              />
           </div>
 
           {/* Email */}
@@ -98,16 +99,17 @@ export default function Register() {
             <label htmlFor="register-email" className="block text-sm font-medium text-[#2D2A24] mb-1">
               Email
             </label>
-            <input
-              id="register-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              required
-              className="w-full rounded-lg border border-[#E8DED5] bg-white px-3 py-2.5 text-sm text-[#2D2A24] placeholder:text-[#2D2A24]/40 focus:border-[#E07A5F] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/20"
-              style={{ minHeight: '44px', fontFamily: 'Inter, sans-serif' }}
-            />
+              <input
+                id="register-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                required
+                autoComplete="off"
+                className="w-full rounded-lg border border-[#E8DED5] bg-white px-3 py-2.5 text-sm text-[#2D2A24] placeholder:text-[#2D2A24]/40 focus:border-[#E07A5F] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/20"
+                style={{ minHeight: '44px', fontFamily: 'Inter, sans-serif' }}
+              />
           </div>
 
           {/* Contraseña */}
@@ -115,17 +117,18 @@ export default function Register() {
             <label htmlFor="register-password" className="block text-sm font-medium text-[#2D2A24] mb-1">
               Contraseña
             </label>
-            <input
-              id="register-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
-              required
-              minLength={6}
-              className="w-full rounded-lg border border-[#E8DED5] bg-white px-3 py-2.5 text-sm text-[#2D2A24] placeholder:text-[#2D2A24]/40 focus:border-[#E07A5F] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/20"
-              style={{ minHeight: '44px', fontFamily: 'Inter, sans-serif' }}
-            />
+              <input
+                id="register-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                required
+                minLength={6}
+                autoComplete="new-password"
+                className="w-full rounded-lg border border-[#E8DED5] bg-white px-3 py-2.5 text-sm text-[#2D2A24] placeholder:text-[#2D2A24]/40 focus:border-[#E07A5F] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/20"
+                style={{ minHeight: '44px', fontFamily: 'Inter, sans-serif' }}
+              />
           </div>
 
           {/* Botón registrarse */}
